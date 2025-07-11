@@ -1,7 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'user_model.dart';
 
-class RegisterForm extends StatelessWidget {
+class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
+
+  @override
+  State<RegisterForm> createState() => _RegisterFormState();
+}
+
+class _RegisterFormState extends State<RegisterForm> {
+  final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _createAccount() async {
+    final box = Hive.box<User>('users');
+    final user = User(
+      fullName: _fullNameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+    await box.add(user);
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('Success'),
+              content: const Text('Account created successfully!'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.of(context).pop(); // Return to login
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +79,7 @@ class RegisterForm extends StatelessWidget {
                 const SizedBox(height: 32),
                 // Full Name field
                 TextField(
+                  controller: _fullNameController,
                   decoration: InputDecoration(
                     hintText: 'Full Name',
                     filled: true,
@@ -41,6 +93,7 @@ class RegisterForm extends StatelessWidget {
                 const SizedBox(height: 16),
                 // Email Address field
                 TextField(
+                  controller: _emailController,
                   decoration: InputDecoration(
                     hintText: 'Email Address',
                     filled: true,
@@ -54,6 +107,7 @@ class RegisterForm extends StatelessWidget {
                 const SizedBox(height: 16),
                 // Password field
                 TextField(
+                  controller: _passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     hintText: 'Password',
@@ -76,7 +130,7 @@ class RegisterForm extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: _createAccount,
                     child: const Text(
                       'CREATE ACCOUNT',
                       style: TextStyle(
@@ -98,6 +152,11 @@ class RegisterForm extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
+                      recognizer:
+                          TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.pop(context);
+                            },
                     ),
                   ),
                 ),

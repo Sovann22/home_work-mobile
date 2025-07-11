@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'login_form.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'user_model.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(UserAdapter());
+  await Hive.openBox<User>('users');
   runApp(const MyApp());
 }
 
